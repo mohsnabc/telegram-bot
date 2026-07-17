@@ -1,7 +1,9 @@
 import os
 import threading
+import instaloader
 from flask import Flask
-from telegram.ext import Application, CommandHandler
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
 TOKEN = os.getenv("TOKEN")
 
@@ -9,16 +11,42 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "OK"
+    return "Bot is running!"
 
-async def start(update, context):
-    await update.message.reply_text("سلام 👋 ربات فعال شد")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "سلام 👋\n"
+        "لینک اینستاگرام را بفرست تا بررسی کنم."
+    )
 
-def run_bot():
-    application = Application.builder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.run_polling(stop_signals=None)
+async def instagram_download(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    url = update.message.text
 
-threading.Thread(target=run_bot).start()
+    if "instagram.com" in url:
+        await update.message.reply_text("⏳ در حال پردازش لینک اینستاگرام...")
+
+        # فعلاً تست اتصال است
+        await update.message.reply_text(
+            "✅ لینک اینستاگرام دریافت شد.\n"
+            "مرحله دانلود را بعداً کامل می‌کنیم."
+        )
+
+async def run_bot():
+    bot = Application.builder().token(TOKEN).build()
+
+    bot.add_handler(CommandHandler("start", start))
+    bot.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, instagram_download)
+    )
+
+    await bot.initialize()
+    await bot.start()
+    await bot.updater.start_polling()
+
+def start_bot():
+    import asyncio
+    asyncio.run(run_bot())
+
+threading.Thread(target=start_bot).start()
 
 app.run(host="0.0.0.0", port=10000)
