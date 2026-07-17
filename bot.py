@@ -1,7 +1,7 @@
-from telegram import Update
 import os
 import threading
 from flask import Flask
+from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
 TOKEN = os.getenv("TOKEN")
