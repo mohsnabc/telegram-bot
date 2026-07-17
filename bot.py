@@ -32,7 +32,9 @@ async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if "instagram.com" in text or "youtube.com" in text or "youtu.be" in text:
 
-        await update.message.reply_text("⏳ در حال بررسی آهنگ...")
+        processing_msg = await update.message.reply_text(
+            "⏳ در حال بررسی آهنگ..."
+        )
 
         try:
 
@@ -56,8 +58,6 @@ async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 filename = filename.rsplit(".", 1)[0] + ".mp3"
 
 
-            # تشخیص آهنگ با AudD
-
             with open(filename, "rb") as audio:
 
                 response = requests.post(
@@ -73,6 +73,13 @@ async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
             result = response.json()
+
+
+            # حذف پیام پردازش
+            try:
+                await processing_msg.delete()
+            except:
+                pass
 
 
             if result.get("result"):
@@ -96,8 +103,6 @@ async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
 
 
-            # ارسال فایل صوتی
-
             await update.message.reply_audio(
                 audio=open(filename, "rb"),
                 title=info.get("title", "Audio")
@@ -105,6 +110,11 @@ async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
         except Exception as e:
+
+            try:
+                await processing_msg.delete()
+            except:
+                pass
 
             await update.message.reply_text(
                 "❌ خطا:\n" + str(e)
@@ -127,7 +137,6 @@ def run_bot():
     )
 
     bot.run_polling(stop_signals=None)
-
 
 
 threading.Thread(
