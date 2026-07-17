@@ -16,10 +16,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("سلام 👋 لینک اینستاگرام را بفرست")
 
 async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    import yt_dlp
+
     text = update.message.text
 
     if "instagram.com" in text:
-        await update.message.reply_text("✅ لینک اینستاگرام دریافت شد")
+        await update.message.reply_text("⏳ در حال دانلود ویدیو...")
+
+        try:
+            ydl_opts = {
+                "format": "best",
+                "outtmpl": "video.%(ext)s"
+            }
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(text, download=True)
+                filename = ydl.prepare_filename(info)
+
+            await update.message.reply_video(
+                video=open(filename, "rb"),
+                caption="✅ دانلود شد"
+            )
+
+        except Exception as e:
+            await update.message.reply_text(
+                "❌ دانلود نشد\n" + str(e)
+            )
 
 def run_bot():
     bot = Application.builder().token(TOKEN).build()
