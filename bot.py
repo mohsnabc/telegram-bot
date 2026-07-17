@@ -99,7 +99,7 @@ async def check_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
 
                 await update.message.reply_text(
-                    "❌ آهنگ تشخیص داده نشد"
+              نبئد
                 )
 
 
