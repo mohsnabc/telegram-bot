@@ -3,3 +3,4 @@ flask
 instaloader
 yt-dlp
 pydub
+requests
